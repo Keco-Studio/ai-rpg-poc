@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "metadata": {
+    "name": "Test Project",
+    "author": "Test Author",
+    "description": "Base project for patch engine tests",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  },
+  "config": {
+    "startingMap": "village_square",
+    "playerSpawn": { "x": 5, "y": 5 },
+    "tileSize": 16,
+    "viewportSize": { "width": 10, "height": 10 }
+  },
+  "tilesets": {
+    "dungeon": {
+      "id": "dungeon",
+      "name": "Dungeon Tileset",
+      "imagePath": "assets/tilesets/dungeon-tileset.png",
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "tileCount": 256,
+      "columns": 16
+    },
+    "characters": {
+      "id": "characters",
+      "name": "Character Sprites",
+      "imagePath": "assets/tilesets/characters.png",
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "tileCount": 64,
+      "columns": 8
+    }
+  },
+  "maps": {
+    "village_square": {
+      "id": "village_square",
+      "name": "Village Square",
+      "width": 10,
+      "height": 10,
+      "tilesetId": "dungeon",
+      "tileLayers": {
+        "ground": {
+          "name": "Ground",
+          "data": [
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 3, 3, 3, 3, 2, 2, 1,
+            1, 2, 2, 3, 3, 3, 3, 2, 2, 1,
+            1, 2, 2, 3, 3, 3, 3, 2, 2, 1,
+            1, 2, 2, 3, 3, 3, 3, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+          ],
+          "zIndex": 0,
+          "opacity": 1,
+          "visible": true
+        }
+      },
+      "collisionLayer": [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+      ],
+      "entities": [
+        {
+          "instanceId": "guard_1",
+          "entityDefId": "npc_guard",
+          "position": { "x": 5, "y": 3 }
+        }
+      ],
+      "triggers": [
+        {
+          "id": "entrance_trigger",
+          "name": "Entrance Trigger",
+          "bounds": { "x": 0, "y": 9, "width": 10, "height": 1 },
+          "events": {
+            "onEnter": [
+              { "type": "showMessage", "data": { "message": "Welcome to the village!" } }
+            ]
+          },
+          "activation": {}
+        }
+      ]
+    }
+  },
+  "entityDefs": {
+    "npc_guard": {
+      "id": "npc_guard",
+      "type": "npc",
+      "name": "Village Guard",
+      "sprite": { "tilesetId": "characters", "tileIndex": 0 },
+      "interaction": {
+        "type": "dialogue",
+        "data": { "dialogueId": "guard_greeting" }
+      }
+    }
+  },
+  "dialogues": {
+    "guard_greeting": {
+      "id": "guard_greeting",
+      "name": "Guard Greeting",
+      "rootNodeId": "start",
+      "nodes": {
+        "start": {
+          "id": "start",
+          "speaker": "Guard",
+          "text": "Halt! Who goes there?",
+          "next": null
+        }
+      }
+    }
+  },
+  "quests": {
+    "main_quest": {
+      "id": "main_quest",
+      "name": "The Beginning",
+      "description": "Start your adventure",
+      "status": "inactive"
+    }
+  }
+}

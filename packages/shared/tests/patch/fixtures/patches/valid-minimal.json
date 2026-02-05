@@ -1,0 +1,21 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-valid-minimal-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "author": "test",
+    "note": "Minimal valid patch - paint a small rect"
+  },
+  "ops": [
+    {
+      "op": "paintRect",
+      "mapId": "village_square",
+      "layerId": "ground",
+      "x": 3,
+      "y": 3,
+      "w": 2,
+      "h": 2,
+      "tileId": 5
+    }
+  ]
+}

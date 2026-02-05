@@ -1,0 +1,31 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-valid-create-map-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "author": "test",
+    "note": "Creates a new map with a layer"
+  },
+  "ops": [
+    {
+      "op": "createMap",
+      "map": {
+        "id": "dungeon_1",
+        "name": "Dungeon Level 1",
+        "tilesetId": "dungeon",
+        "width": 15,
+        "height": 15
+      }
+    },
+    {
+      "op": "createLayer",
+      "mapId": "dungeon_1",
+      "layer": {
+        "id": "ground",
+        "name": "Ground",
+        "z": 0
+      },
+      "fillTileId": 1
+    }
+  ]
+}

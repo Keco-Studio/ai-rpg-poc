@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "metadata": {
+    "name": "Minimal Valid Project",
+    "createdAt": "2026-02-05T00:00:00Z",
+    "updatedAt": "2026-02-05T00:00:00Z"
+  },
+  "config": {
+    "startingMap": "map:start",
+    "playerSpawn": { "x": 1, "y": 1 },
+    "tileSize": 16,
+    "viewportSize": { "width": 10, "height": 10 }
+  },
+  "tilesets": {
+    "tileset:basic": {
+      "id": "tileset:basic",
+      "name": "Basic Tileset",
+      "imagePath": "assets/tilesets/basic.png",
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "tileCount": 16,
+      "columns": 4
+    }
+  },
+  "maps": {
+    "map:start": {
+      "id": "map:start",
+      "name": "Start Room",
+      "width": 3,
+      "height": 3,
+      "tilesetId": "tileset:basic",
+      "tileLayers": {
+        "ground": {
+          "name": "ground",
+          "data": [1, 1, 1, 1, 2, 1, 1, 1, 1],
+          "zIndex": 0,
+          "opacity": 1.0,
+          "visible": true
+        }
+      },
+      "collisionLayer": [1, 1, 1, 1, 0, 1, 1, 1, 1],
+      "entities": [
+        {
+          "instanceId": "instance:guard-1",
+          "entityDefId": "npc:guard",
+          "position": { "x": 1, "y": 1 }
+        }
+      ],
+      "triggers": []
+    }
+  },
+  "entityDefs": {
+    "npc:guard": {
+      "id": "npc:guard",
+      "type": "npc",
+      "name": "Guard",
+      "sprite": {
+        "tilesetId": "tileset:basic",
+        "tileIndex": 8
+      },
+      "interaction": {
+        "type": "dialogue",
+        "data": {
+          "dialogueId": "dialogue:greeting"
+        }
+      }
+    }
+  },
+  "dialogues": {
+    "dialogue:greeting": {
+      "id": "dialogue:greeting",
+      "name": "Guard Greeting",
+      "rootNodeId": "node-1",
+      "nodes": {
+        "node-1": {
+          "id": "node-1",
+          "speaker": "Guard",
+          "text": "Hello, traveler!",
+          "next": null
+        }
+      }
+    }
+  },
+  "quests": {}
+}

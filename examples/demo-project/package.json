@@ -1,0 +1,6 @@
+{
+  "name": "@ai-rpg-maker/demo-project",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Demo RPG project for testing the AI RPG Maker runtime"
+}

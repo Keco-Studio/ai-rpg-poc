@@ -1,0 +1,6 @@
+{
+  "name": "@ai-rpg-maker/editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Editor UI for AI RPG Maker (future scope)"
+}

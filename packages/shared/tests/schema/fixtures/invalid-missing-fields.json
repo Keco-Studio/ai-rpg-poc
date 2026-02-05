@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "metadata": {
+    "name": "Missing Fields Project"
+  },
+  "config": {
+    "startingMap": "map:start",
+    "playerSpawn": { "x": 0, "y": 0 },
+    "tileSize": 16,
+    "viewportSize": { "width": 10, "height": 10 }
+  },
+  "tilesets": {},
+  "maps": {},
+  "entityDefs": {}
+}

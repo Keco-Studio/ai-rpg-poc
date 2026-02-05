@@ -1,0 +1,40 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-valid-paint-tiles-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "author": "test",
+    "note": "Paint tiles and set individual tiles"
+  },
+  "ops": [
+    {
+      "op": "paintRect",
+      "mapId": "village_square",
+      "layerId": "ground",
+      "x": 2,
+      "y": 2,
+      "w": 3,
+      "h": 3,
+      "tileId": 10
+    },
+    {
+      "op": "setTiles",
+      "mapId": "village_square",
+      "layerId": "ground",
+      "cells": [
+        { "x": 5, "y": 5, "tileId": 20 },
+        { "x": 6, "y": 5, "tileId": 21 },
+        { "x": 7, "y": 5, "tileId": 22 }
+      ]
+    },
+    {
+      "op": "setCollisionRect",
+      "mapId": "village_square",
+      "x": 2,
+      "y": 2,
+      "w": 3,
+      "h": 3,
+      "solid": 1
+    }
+  ]
+}

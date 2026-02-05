@@ -1,0 +1,167 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-valid-comprehensive-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "author": "AI Assistant",
+    "createdAt": "2026-02-05T14:30:00Z",
+    "note": "Comprehensive patch exercising all 17 operation types"
+  },
+  "ops": [
+    {
+      "op": "createMap",
+      "map": {
+        "id": "dungeon_1",
+        "name": "Dungeon Level 1",
+        "tilesetId": "dungeon",
+        "width": 20,
+        "height": 15
+      }
+    },
+    {
+      "op": "createLayer",
+      "mapId": "dungeon_1",
+      "layer": { "id": "floor", "name": "Floor", "z": 0 },
+      "fillTileId": 2
+    },
+    {
+      "op": "createLayer",
+      "mapId": "dungeon_1",
+      "layer": { "id": "walls", "name": "Walls", "z": 1 }
+    },
+    {
+      "op": "paintRect",
+      "mapId": "dungeon_1",
+      "layerId": "floor",
+      "x": 5, "y": 5, "w": 10, "h": 5,
+      "tileId": 10
+    },
+    {
+      "op": "setTiles",
+      "mapId": "dungeon_1",
+      "layerId": "walls",
+      "cells": [
+        { "x": 0, "y": 0, "tileId": 50 },
+        { "x": 1, "y": 0, "tileId": 51 },
+        { "x": 2, "y": 0, "tileId": 52 }
+      ]
+    },
+    {
+      "op": "clearTiles",
+      "mapId": "village_square",
+      "layerId": "ground",
+      "cells": [{ "x": 5, "y": 5 }]
+    },
+    {
+      "op": "setCollisionRect",
+      "mapId": "dungeon_1",
+      "x": 0, "y": 0, "w": 20, "h": 1,
+      "solid": 1
+    },
+    {
+      "op": "setCollisionCells",
+      "mapId": "dungeon_1",
+      "cells": [
+        { "x": 5, "y": 5, "solid": 1 },
+        { "x": 6, "y": 5, "solid": 1 }
+      ]
+    },
+    {
+      "op": "createDialogue",
+      "dialogue": {
+        "id": "dungeon_keeper_dlg",
+        "name": "Dungeon Keeper",
+        "rootNodeId": "greet",
+        "nodes": {
+          "greet": {
+            "id": "greet",
+            "speaker": "Keeper",
+            "text": "You dare enter my dungeon?",
+            "choices": [
+              { "text": "I seek treasure!", "next": "treasure" },
+              { "text": "I'll be going now...", "next": null }
+            ]
+          },
+          "treasure": {
+            "id": "treasure",
+            "speaker": "Keeper",
+            "text": "Then prepare yourself!",
+            "next": null
+          }
+        }
+      }
+    },
+    {
+      "op": "createEntityDef",
+      "entity": {
+        "id": "dungeon_keeper",
+        "kind": "npc",
+        "name": "Dungeon Keeper",
+        "sprite": { "tilesetId": "characters", "tileId": 16 },
+        "behavior": { "dialogueId": "dungeon_keeper_dlg" }
+      }
+    },
+    {
+      "op": "placeEntity",
+      "mapId": "dungeon_1",
+      "instance": {
+        "id": "keeper_1",
+        "entityId": "dungeon_keeper",
+        "x": 10,
+        "y": 7
+      }
+    },
+    {
+      "op": "moveEntity",
+      "mapId": "village_square",
+      "instanceId": "guard_1",
+      "x": 7,
+      "y": 7
+    },
+    {
+      "op": "createTrigger",
+      "mapId": "dungeon_1",
+      "trigger": {
+        "id": "entrance_zone",
+        "rect": { "x": 9, "y": 14, "w": 2, "h": 1 },
+        "onEnter": [
+          { "type": "showMessage", "data": { "message": "You entered the dungeon!" } }
+        ]
+      }
+    },
+    {
+      "op": "updateTrigger",
+      "mapId": "village_square",
+      "triggerId": "entrance_trigger",
+      "patch": {
+        "rect": { "x": 0, "y": 8, "w": 10, "h": 2 }
+      }
+    },
+    {
+      "op": "updateDialogueNode",
+      "dialogueId": "guard_greeting",
+      "nodeId": "start",
+      "patch": {
+        "text": "Welcome back, adventurer!",
+        "speaker": "Friendly Guard"
+      }
+    },
+    {
+      "op": "createQuest",
+      "quest": {
+        "id": "dungeon_quest",
+        "name": "Dungeon Dive",
+        "description": "Explore the dungeon and defeat the keeper",
+        "status": "inactive"
+      }
+    },
+    {
+      "op": "updateQuest",
+      "questId": "main_quest",
+      "patch": {
+        "status": "active",
+        "description": "Your adventure has begun!"
+      }
+    }
+  ]
+}

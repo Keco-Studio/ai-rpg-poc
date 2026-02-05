@@ -1,0 +1,20 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-invalid-tile-index-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "note": "Tile ID exceeds tileset capacity"
+  },
+  "ops": [
+    {
+      "op": "paintRect",
+      "mapId": "village_square",
+      "layerId": "ground",
+      "x": 1,
+      "y": 1,
+      "w": 2,
+      "h": 2,
+      "tileId": 999
+    }
+  ]
+}
