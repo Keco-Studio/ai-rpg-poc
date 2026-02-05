@@ -1,0 +1,20 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-invalid-oob-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "note": "Tiles painted outside map bounds"
+  },
+  "ops": [
+    {
+      "op": "paintRect",
+      "mapId": "village_square",
+      "layerId": "ground",
+      "x": 8,
+      "y": 8,
+      "w": 5,
+      "h": 5,
+      "tileId": 5
+    }
+  ]
+}

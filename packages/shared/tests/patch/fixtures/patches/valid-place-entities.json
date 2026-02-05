@@ -1,0 +1,65 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-valid-place-entities-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "author": "AI Assistant",
+    "note": "Create NPC and place on map with dialogue and quest"
+  },
+  "ops": [
+    {
+      "op": "createDialogue",
+      "dialogue": {
+        "id": "merchant_intro",
+        "name": "Merchant Introduction",
+        "rootNodeId": "greet",
+        "nodes": {
+          "greet": {
+            "id": "greet",
+            "speaker": "Merchant",
+            "text": "Welcome! Browse my wares.",
+            "choices": [
+              { "text": "What do you sell?", "next": "sell" },
+              { "text": "Goodbye", "next": null }
+            ]
+          },
+          "sell": {
+            "id": "sell",
+            "speaker": "Merchant",
+            "text": "I have potions and scrolls!",
+            "next": null
+          }
+        }
+      }
+    },
+    {
+      "op": "createEntityDef",
+      "entity": {
+        "id": "npc_merchant",
+        "kind": "npc",
+        "name": "Merchant",
+        "sprite": { "tilesetId": "characters", "tileId": 8 },
+        "behavior": { "dialogueId": "merchant_intro" }
+      }
+    },
+    {
+      "op": "placeEntity",
+      "mapId": "village_square",
+      "instance": {
+        "id": "merchant_1",
+        "entityId": "npc_merchant",
+        "x": 7,
+        "y": 4
+      }
+    },
+    {
+      "op": "createQuest",
+      "quest": {
+        "id": "fetch_quest",
+        "name": "Merchant's Request",
+        "description": "Fetch 3 herbs from the forest",
+        "status": "inactive"
+      }
+    }
+  ]
+}

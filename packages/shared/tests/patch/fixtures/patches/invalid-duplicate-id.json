@@ -1,0 +1,18 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-invalid-duplicate-id-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "note": "Attempts to create entity with existing ID"
+  },
+  "ops": [
+    {
+      "op": "createEntityDef",
+      "entity": {
+        "id": "npc_guard",
+        "kind": "npc",
+        "sprite": { "tilesetId": "characters", "tileId": 5 }
+      }
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI RPG Maker - Runtime</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #111;
+    }
+
+    #game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-canvas {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      /* Ensure no browser-level smoothing */
+      -ms-interpolation-mode: nearest-neighbor;
+    }
+
+    #error-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      color: #ff4444;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 2rem;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    #error-overlay h1 {
+      color: #ff6666;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    #error-overlay .error-item {
+      background: rgba(255, 68, 68, 0.1);
+      border-left: 3px solid #ff4444;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #error-overlay .error-code {
+      color: #ff8888;
+      font-weight: bold;
+    }
+
+    #error-overlay .error-path {
+      color: #ffaaaa;
+      font-size: 0.9em;
+    }
+
+    #error-overlay .error-suggestion {
+      color: #88ff88;
+      font-size: 0.9em;
+      margin-top: 0.25rem;
+    }
+
+    #debug-overlay {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      z-index: 500;
+      max-width: 80%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+  </div>
+  <div id="error-overlay">
+    <h1>Project Validation Failed</h1>
+    <div id="error-list"></div>
+  </div>
+  <div id="debug-overlay"></div>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

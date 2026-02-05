@@ -1,0 +1,383 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-rpg.example.com/schemas/patch-v1.json",
+  "title": "Patch Format v1",
+  "description": "Schema for validated project mutation patches with undo support",
+  "type": "object",
+  "required": ["patchVersion", "patchId", "baseSchemaVersion", "ops"],
+  "properties": {
+    "patchVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Patch format version (must be 1 for this schema)"
+    },
+    "patchId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for this patch (UUID recommended)"
+    },
+    "baseSchemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Target project schema version (must match Project.version)"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Creator of the patch (human, AI model, or tool name)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Human-readable description or intent"
+        }
+      }
+    },
+    "ops": {
+      "type": "array",
+      "description": "Ordered sequence of operations to apply",
+      "items": {
+        "$ref": "#/definitions/PatchOp"
+      }
+    }
+  },
+  "definitions": {
+    "PatchOp": {
+      "oneOf": [
+        { "$ref": "#/definitions/CreateMapOp" },
+        { "$ref": "#/definitions/CreateLayerOp" },
+        { "$ref": "#/definitions/PaintRectOp" },
+        { "$ref": "#/definitions/SetTilesOp" },
+        { "$ref": "#/definitions/ClearTilesOp" },
+        { "$ref": "#/definitions/SetCollisionCellsOp" },
+        { "$ref": "#/definitions/SetCollisionRectOp" },
+        { "$ref": "#/definitions/CreateEntityDefOp" },
+        { "$ref": "#/definitions/PlaceEntityOp" },
+        { "$ref": "#/definitions/MoveEntityOp" },
+        { "$ref": "#/definitions/DeleteEntityOp" },
+        { "$ref": "#/definitions/CreateTriggerOp" },
+        { "$ref": "#/definitions/UpdateTriggerOp" },
+        { "$ref": "#/definitions/CreateDialogueOp" },
+        { "$ref": "#/definitions/UpdateDialogueNodeOp" },
+        { "$ref": "#/definitions/CreateQuestOp" },
+        { "$ref": "#/definitions/UpdateQuestOp" }
+      ]
+    },
+    "CreateMapOp": {
+      "type": "object",
+      "required": ["op", "map"],
+      "properties": {
+        "op": { "const": "createMap" },
+        "map": {
+          "type": "object",
+          "required": ["id", "name", "tilesetId", "width", "height"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "name": { "type": "string", "minLength": 1 },
+            "tilesetId": { "type": "string", "minLength": 1 },
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 },
+            "layerIds": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "CreateLayerOp": {
+      "type": "object",
+      "required": ["op", "mapId", "layer"],
+      "properties": {
+        "op": { "const": "createLayer" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "layer": {
+          "type": "object",
+          "required": ["id", "name", "z"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "name": { "type": "string", "minLength": 1 },
+            "z": { "type": "integer" }
+          }
+        },
+        "fillTileId": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "PaintRectOp": {
+      "type": "object",
+      "required": ["op", "mapId", "layerId", "x", "y", "w", "h", "tileId"],
+      "properties": {
+        "op": { "const": "paintRect" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "layerId": { "type": "string", "minLength": 1 },
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 },
+        "w": { "type": "integer", "minimum": 1 },
+        "h": { "type": "integer", "minimum": 1 },
+        "tileId": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "SetTilesOp": {
+      "type": "object",
+      "required": ["op", "mapId", "layerId", "cells"],
+      "properties": {
+        "op": { "const": "setTiles" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "layerId": { "type": "string", "minLength": 1 },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["x", "y", "tileId"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 },
+              "tileId": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "ClearTilesOp": {
+      "type": "object",
+      "required": ["op", "mapId", "layerId", "cells"],
+      "properties": {
+        "op": { "const": "clearTiles" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "layerId": { "type": "string", "minLength": 1 },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "SetCollisionCellsOp": {
+      "type": "object",
+      "required": ["op", "mapId", "cells"],
+      "properties": {
+        "op": { "const": "setCollisionCells" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "cells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["x", "y", "solid"],
+            "properties": {
+              "x": { "type": "integer", "minimum": 0 },
+              "y": { "type": "integer", "minimum": 0 },
+              "solid": { "type": "integer", "enum": [0, 1] }
+            }
+          }
+        }
+      }
+    },
+    "SetCollisionRectOp": {
+      "type": "object",
+      "required": ["op", "mapId", "x", "y", "w", "h", "solid"],
+      "properties": {
+        "op": { "const": "setCollisionRect" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 },
+        "w": { "type": "integer", "minimum": 1 },
+        "h": { "type": "integer", "minimum": 1 },
+        "solid": { "type": "integer", "enum": [0, 1] }
+      }
+    },
+    "CreateEntityDefOp": {
+      "type": "object",
+      "required": ["op", "entity"],
+      "properties": {
+        "op": { "const": "createEntityDef" },
+        "entity": {
+          "type": "object",
+          "required": ["id", "kind", "sprite"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "kind": { "type": "string", "enum": ["npc", "door", "chest"] },
+            "sprite": {
+              "type": "object",
+              "required": ["tilesetId", "tileId"],
+              "properties": {
+                "tilesetId": { "type": "string", "minLength": 1 },
+                "tileId": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "collider": {
+              "type": "object",
+              "required": ["w", "h"],
+              "properties": {
+                "w": { "type": "number", "minimum": 0 },
+                "h": { "type": "number", "minimum": 0 }
+              }
+            },
+            "behavior": {
+              "type": "object",
+              "properties": {
+                "dialogueId": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "PlaceEntityOp": {
+      "type": "object",
+      "required": ["op", "mapId", "instance"],
+      "properties": {
+        "op": { "const": "placeEntity" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "instance": {
+          "type": "object",
+          "required": ["id", "entityId", "x", "y"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "entityId": { "type": "string", "minLength": 1 },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "props": { "type": "object" }
+          }
+        }
+      }
+    },
+    "MoveEntityOp": {
+      "type": "object",
+      "required": ["op", "mapId", "instanceId", "x", "y"],
+      "properties": {
+        "op": { "const": "moveEntity" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "instanceId": { "type": "string", "minLength": 1 },
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "DeleteEntityOp": {
+      "type": "object",
+      "required": ["op", "mapId", "instanceId"],
+      "properties": {
+        "op": { "const": "deleteEntity" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "instanceId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "CreateTriggerOp": {
+      "type": "object",
+      "required": ["op", "mapId", "trigger"],
+      "properties": {
+        "op": { "const": "createTrigger" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "trigger": {
+          "type": "object",
+          "required": ["id", "rect"],
+          "properties": {
+            "id": { "type": "string", "minLength": 1 },
+            "rect": {
+              "type": "object",
+              "required": ["x", "y", "w", "h"],
+              "properties": {
+                "x": { "type": "integer", "minimum": 0 },
+                "y": { "type": "integer", "minimum": 0 },
+                "w": { "type": "integer", "minimum": 1 },
+                "h": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "onEnter": { "type": "array" },
+            "onInteract": { "type": "array" }
+          }
+        }
+      }
+    },
+    "UpdateTriggerOp": {
+      "type": "object",
+      "required": ["op", "mapId", "triggerId", "patch"],
+      "properties": {
+        "op": { "const": "updateTrigger" },
+        "mapId": { "type": "string", "minLength": 1 },
+        "triggerId": { "type": "string", "minLength": 1 },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "rect": {
+              "type": "object",
+              "required": ["x", "y", "w", "h"],
+              "properties": {
+                "x": { "type": "integer", "minimum": 0 },
+                "y": { "type": "integer", "minimum": 0 },
+                "w": { "type": "integer", "minimum": 1 },
+                "h": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "onEnter": { "type": "array" },
+            "onInteract": { "type": "array" }
+          }
+        }
+      }
+    },
+    "CreateDialogueOp": {
+      "type": "object",
+      "required": ["op", "dialogue"],
+      "properties": {
+        "op": { "const": "createDialogue" },
+        "dialogue": {
+          "type": "object",
+          "description": "Full dialogue graph structure (see Project Schema v1)"
+        }
+      }
+    },
+    "UpdateDialogueNodeOp": {
+      "type": "object",
+      "required": ["op", "dialogueId", "nodeId", "patch"],
+      "properties": {
+        "op": { "const": "updateDialogueNode" },
+        "dialogueId": { "type": "string", "minLength": 1 },
+        "nodeId": { "type": "string", "minLength": 1 },
+        "patch": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "speaker": { "type": "string" },
+            "choices": { "type": "array" },
+            "effects": { "type": "array" }
+          }
+        }
+      }
+    },
+    "CreateQuestOp": {
+      "type": "object",
+      "required": ["op", "quest"],
+      "properties": {
+        "op": { "const": "createQuest" },
+        "quest": {
+          "type": "object",
+          "description": "Full quest definition structure (see Project Schema v1)"
+        }
+      }
+    },
+    "UpdateQuestOp": {
+      "type": "object",
+      "required": ["op", "questId", "patch"],
+      "properties": {
+        "op": { "const": "updateQuest" },
+        "questId": { "type": "string", "minLength": 1 },
+        "patch": {
+          "type": "object",
+          "description": "Partial quest definition (see Project Schema v1)"
+        }
+      }
+    }
+  }
+}

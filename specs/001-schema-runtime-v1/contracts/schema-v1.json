@@ -1,0 +1,530 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-rpg-maker.dev/schemas/project-v1.json",
+  "title": "RPG Maker Project Schema v1",
+  "description": "Schema for RPG Maker project files (version 1)",
+  "type": "object",
+  "required": ["version", "metadata", "config", "tilesets", "maps", "entityDefs", "dialogues"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Project schema version number"
+    },
+    "metadata": {
+      "$ref": "#/definitions/ProjectMetadata"
+    },
+    "config": {
+      "$ref": "#/definitions/GameConfig"
+    },
+    "tilesets": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Tileset"
+      },
+      "minProperties": 1,
+      "description": "Collection of tilesets indexed by ID"
+    },
+    "maps": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/GameMap"
+      },
+      "minProperties": 1,
+      "description": "Collection of maps indexed by ID"
+    },
+    "entityDefs": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/EntityDef"
+      },
+      "minProperties": 1,
+      "description": "Collection of entity templates indexed by ID"
+    },
+    "dialogues": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/DialogueGraph"
+      },
+      "description": "Collection of dialogue graphs indexed by ID"
+    },
+    "quests": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Quest"
+      },
+      "description": "Collection of quests indexed by ID (optional for v1)"
+    }
+  },
+  "definitions": {
+    "ProjectMetadata": {
+      "type": "object",
+      "required": ["name", "createdAt", "updatedAt"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Project name"
+        },
+        "author": {
+          "type": "string",
+          "description": "Project author (optional)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description (optional)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp (ISO 8601)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modified timestamp (ISO 8601)"
+        }
+      }
+    },
+    "GameConfig": {
+      "type": "object",
+      "required": ["startingMap", "playerSpawn", "tileSize", "viewportSize"],
+      "properties": {
+        "startingMap": {
+          "type": "string",
+          "description": "ID of the starting map"
+        },
+        "playerSpawn": {
+          "$ref": "#/definitions/Position"
+        },
+        "tileSize": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Tile size in pixels"
+        },
+        "viewportSize": {
+          "type": "object",
+          "required": ["width", "height"],
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "Tileset": {
+      "type": "object",
+      "required": ["id", "name", "imagePath", "tileWidth", "tileHeight", "tileCount", "columns"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^tileset:[a-z0-9-]+$",
+          "description": "Unique tileset ID (format: tileset:name)"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name"
+        },
+        "imagePath": {
+          "type": "string",
+          "description": "Path to tileset image"
+        },
+        "tileWidth": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Tile width in pixels"
+        },
+        "tileHeight": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Tile height in pixels"
+        },
+        "tileCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of tiles"
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Tiles per row in image"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "tags": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "GameMap": {
+      "type": "object",
+      "required": ["id", "name", "width", "height", "tilesetId", "tileLayers", "collisionLayer", "entities", "triggers"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^map:[a-z0-9-]+$",
+          "description": "Unique map ID (format: map:name)"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Map width in tiles"
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Map height in tiles"
+        },
+        "tilesetId": {
+          "type": "string",
+          "description": "Reference to tileset ID"
+        },
+        "tileLayers": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/TileLayer"
+          },
+          "minProperties": 1,
+          "description": "Tile layers (e.g., ground, walls)"
+        },
+        "collisionLayer": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "description": "Collision data (0=walkable, 1=blocked)"
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EntityInstance"
+          },
+          "description": "Entity instances on this map"
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TriggerRegion"
+          },
+          "description": "Trigger regions on this map"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": { "type": "string" },
+            "music": { "type": "string" }
+          }
+        }
+      }
+    },
+    "TileLayer": {
+      "type": "object",
+      "required": ["name", "data", "zIndex", "opacity", "visible"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Layer name (e.g., ground, walls)"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "Flat tile array (0=empty, 1+=tile index)"
+        },
+        "zIndex": {
+          "type": "integer",
+          "description": "Rendering order (lower=behind)"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Layer opacity (0.0-1.0)"
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "Layer visibility"
+        }
+      }
+    },
+    "EntityDef": {
+      "type": "object",
+      "required": ["id", "type", "name", "sprite"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(npc|item|door|decoration):[a-z0-9-]+$",
+          "description": "Unique entity definition ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["npc", "item", "door", "decoration"],
+          "description": "Entity type"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name"
+        },
+        "sprite": {
+          "type": "object",
+          "required": ["tilesetId", "tileIndex"],
+          "properties": {
+            "tilesetId": { "type": "string" },
+            "tileIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "interaction": {
+          "type": "object",
+          "description": "Interaction behavior (optional)"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "tags": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "EntityInstance": {
+      "type": "object",
+      "required": ["instanceId", "entityDefId", "position"],
+      "properties": {
+        "instanceId": {
+          "type": "string",
+          "pattern": "^instance:[a-z0-9-]+$",
+          "description": "Unique instance ID"
+        },
+        "entityDefId": {
+          "type": "string",
+          "description": "Reference to entity definition"
+        },
+        "position": {
+          "$ref": "#/definitions/Position"
+        },
+        "overrides": {
+          "type": "object",
+          "description": "Instance-specific overrides"
+        }
+      }
+    },
+    "TriggerRegion": {
+      "type": "object",
+      "required": ["id", "name", "bounds", "events", "activation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^trigger:[a-z0-9-]+$",
+          "description": "Unique trigger ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Trigger name (for debugging)"
+        },
+        "bounds": {
+          "$ref": "#/definitions/Rectangle"
+        },
+        "events": {
+          "type": "object",
+          "properties": {
+            "onEnter": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/TriggerEvent" }
+            },
+            "onInteract": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/TriggerEvent" }
+            }
+          },
+          "minProperties": 1
+        },
+        "activation": {
+          "type": "object",
+          "properties": {
+            "once": { "type": "boolean" },
+            "requiresKey": { "type": "string" }
+          }
+        }
+      }
+    },
+    "TriggerEvent": {
+      "type": "object",
+      "required": ["type", "data"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["showMessage", "startDialogue", "teleport", "log"]
+        },
+        "data": {
+          "type": "object",
+          "description": "Event-specific data"
+        }
+      }
+    },
+    "DialogueGraph": {
+      "type": "object",
+      "required": ["id", "name", "rootNodeId", "nodes"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^dialogue:[a-z0-9-]+$",
+          "description": "Unique dialogue ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Dialogue name"
+        },
+        "rootNodeId": {
+          "type": "string",
+          "description": "Starting node ID"
+        },
+        "nodes": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/DialogueNode"
+          },
+          "minProperties": 1
+        }
+      }
+    },
+    "DialogueNode": {
+      "type": "object",
+      "required": ["id", "speaker", "text"],
+      "properties": {
+        "id": { "type": "string" },
+        "speaker": { "type": "string" },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DialogueChoice"
+          },
+          "minItems": 1
+        },
+        "next": {
+          "type": ["string", "null"],
+          "description": "Next node ID (null=end)"
+        }
+      }
+    },
+    "DialogueChoice": {
+      "type": "object",
+      "required": ["text", "next"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next": {
+          "type": ["string", "null"]
+        },
+        "conditions": {
+          "type": "object",
+          "properties": {
+            "requiresFlag": { "type": "string" },
+            "requiresItem": { "type": "string" }
+          }
+        }
+      }
+    },
+    "Quest": {
+      "type": "object",
+      "required": ["id", "name", "description", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^quest:[a-z0-9-]+$"
+        },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "stages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "objectives"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "objectives": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["inactive", "active", "completed", "failed"]
+        }
+      }
+    },
+    "Position": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "Rectangle": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

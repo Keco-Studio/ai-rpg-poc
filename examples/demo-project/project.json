@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "metadata": {
+    "name": "Demo RPG Project",
+    "author": "AI RPG Maker",
+    "description": "A demo dungeon project showcasing schema validation and runtime rendering",
+    "createdAt": "2026-02-05T00:00:00Z",
+    "updatedAt": "2026-02-05T00:00:00Z"
+  },
+  "config": {
+    "startingMap": "map:start",
+    "playerSpawn": { "x": 5, "y": 5 },
+    "tileSize": 16,
+    "viewportSize": { "width": 20, "height": 15 }
+  },
+  "tilesets": {
+    "tileset:dungeon": {
+      "id": "tileset:dungeon",
+      "name": "Dungeon Tileset",
+      "imagePath": "assets/tilesets/dungeon-tileset.png",
+      "tileWidth": 16,
+      "tileHeight": 16,
+      "tileCount": 16,
+      "columns": 4,
+      "metadata": {
+        "description": "Basic dungeon tiles for demo project",
+        "tags": ["dungeon", "demo"]
+      }
+    }
+  },
+  "maps": {
+    "map:start": {
+      "id": "map:start",
+      "name": "Starting Room",
+      "width": 10,
+      "height": 10,
+      "tilesetId": "tileset:dungeon",
+      "tileLayers": {
+        "ground": {
+          "name": "ground",
+          "data": [
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 2, 2, 2, 2, 2, 2, 2, 2, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+          ],
+          "zIndex": 0,
+          "opacity": 1.0,
+          "visible": true
+        }
+      },
+      "collisionLayer": [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+      ],
+      "entities": [
+        {
+          "instanceId": "instance:player",
+          "entityDefId": "npc:player",
+          "position": { "x": 5, "y": 5 }
+        },
+        {
+          "instanceId": "instance:guard-1",
+          "entityDefId": "npc:guard",
+          "position": { "x": 3, "y": 3 }
+        }
+      ],
+      "triggers": [
+        {
+          "id": "trigger:entrance",
+          "name": "Entrance Trigger",
+          "bounds": {
+            "x": 7,
+            "y": 7,
+            "width": 2,
+            "height": 2
+          },
+          "events": {
+            "onEnter": [
+              {
+                "type": "showMessage",
+                "data": {
+                  "message": "You sense something in this corner of the room..."
+                }
+              }
+            ]
+          },
+          "activation": {
+            "once": true
+          }
+        }
+      ]
+    }
+  },
+  "entityDefs": {
+    "npc:player": {
+      "id": "npc:player",
+      "type": "npc",
+      "name": "Player",
+      "sprite": {
+        "tilesetId": "tileset:dungeon",
+        "tileIndex": 8
+      }
+    },
+    "npc:guard": {
+      "id": "npc:guard",
+      "type": "npc",
+      "name": "Guard",
+      "sprite": {
+        "tilesetId": "tileset:dungeon",
+        "tileIndex": 9
+      },
+      "interaction": {
+        "type": "dialogue",
+        "data": {
+          "dialogueId": "dialogue:greeting"
+        }
+      }
+    }
+  },
+  "dialogues": {
+    "dialogue:greeting": {
+      "id": "dialogue:greeting",
+      "name": "Guard Greeting",
+      "rootNodeId": "node-1",
+      "nodes": {
+        "node-1": {
+          "id": "node-1",
+          "speaker": "Guard",
+          "text": "Greetings, traveler! Welcome to the dungeon.",
+          "next": null
+        }
+      }
+    }
+  },
+  "quests": {}
+}

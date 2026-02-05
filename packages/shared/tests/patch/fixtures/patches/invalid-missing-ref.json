@@ -1,0 +1,20 @@
+{
+  "patchVersion": 1,
+  "patchId": "test-invalid-missing-ref-001",
+  "baseSchemaVersion": 1,
+  "meta": {
+    "note": "References non-existent entity definition"
+  },
+  "ops": [
+    {
+      "op": "placeEntity",
+      "mapId": "village_square",
+      "instance": {
+        "id": "ghost_1",
+        "entityId": "npc_ghost",
+        "x": 5,
+        "y": 5
+      }
+    }
+  ]
+}
