@@ -68,4 +68,4 @@ export {
 export { checkGuardrails } from './guardrails.js';
 
 // Conflict Detection
-export { detectConflicts } from './conflict.js';
+export { detectConflicts, buildConflictHunks } from './conflict.js';

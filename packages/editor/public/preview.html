@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Runtime Preview</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #11111b; }
+      #preview-canvas { width: 100%; height: 100%; }
+      .loading { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #6c7086; font-family: sans-serif; font-size: 14px; }
+      .error { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: #f38ba8; font-family: sans-serif; font-size: 14px; padding: 16px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="loading">Waiting for project data...</div>
+
+    <script type="module">
+      // Runtime Preview Host
+      // Communicates with the editor via postMessage
+      //
+      // Protocol:
+      //   Editor → iframe: { type: 'loadProject', project, mapId }
+      //   Editor → iframe: { type: 'reload' }
+      //   iframe → Editor: { type: 'ready' }
+      //   iframe → Editor: { type: 'error', message }
+
+      const app = document.getElementById('app');
+      let currentProject = null;
+      let currentMapId = null;
+
+      function showLoading(msg) {
+        app.className = 'loading';
+        app.textContent = msg || 'Loading...';
+      }
+
+      function showError(msg) {
+        app.className = 'error';
+        app.textContent = msg;
+        window.parent.postMessage({ type: 'error', message: msg }, '*');
+      }
+
+      function renderPreview(project, mapId) {
+        try {
+          const map = project.maps[mapId];
+          if (!map) {
+            showError(`Map "${mapId}" not found in project`);
+            return;
+          }
+
+          // Simple canvas-based preview (placeholder for Excalibur integration)
+          app.className = '';
+          app.innerHTML = '';
+
+          const canvas = document.createElement('canvas');
+          canvas.id = 'preview-canvas';
+          const tileSize = project.config.tileSize || 16;
+          canvas.width = map.width * tileSize;
+          canvas.height = map.height * tileSize;
+          canvas.style.imageRendering = 'pixelated';
+          app.appendChild(canvas);
+
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = false;
+
+          // Render tile layers
+          const tileset = project.tilesets[map.tilesetId];
+          const layerEntries = Object.entries(map.tileLayers)
+            .sort(([, a], [, b]) => a.zIndex - b.zIndex);
+
+          for (const [layerId, layer] of layerEntries) {
+            if (!layer.visible) continue;
+            ctx.globalAlpha = layer.opacity;
+
+            for (let y = 0; y < map.height; y++) {
+              for (let x = 0; x < map.width; x++) {
+                const tileId = layer.data[y * map.width + x];
+                if (tileId === 0) continue;
+                const hue = (tileId * 37) % 360;
+                ctx.fillStyle = `hsl(${hue}, 60%, 50%)`;
+                ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+              }
+            }
+          }
+          ctx.globalAlpha = 1;
+
+          // Render entities as markers
+          for (const entity of map.entities) {
+            const def = project.entityDefs[entity.entityDefId];
+            const px = entity.position.x * tileSize;
+            const py = entity.position.y * tileSize;
+            ctx.fillStyle = '#89b4fa';
+            ctx.fillRect(px + 2, py + 2, tileSize - 4, tileSize - 4);
+            ctx.fillStyle = '#1e1e2e';
+            ctx.font = `bold ${tileSize / 2}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(
+              def ? def.name.charAt(0) : '?',
+              px + tileSize / 2,
+              py + tileSize / 2
+            );
+          }
+
+          window.parent.postMessage({ type: 'ready' }, '*');
+        } catch (err) {
+          showError(`Preview error: ${err.message}`);
+        }
+      }
+
+      window.addEventListener('message', (event) => {
+        const { type, project, mapId } = event.data || {};
+
+        switch (type) {
+          case 'loadProject':
+            currentProject = project;
+            currentMapId = mapId;
+            showLoading('Rendering preview...');
+            requestAnimationFrame(() => renderPreview(project, mapId));
+            break;
+
+          case 'reload':
+            if (currentProject && currentMapId) {
+              showLoading('Reloading...');
+              requestAnimationFrame(() => renderPreview(currentProject, currentMapId));
+            }
+            break;
+        }
+      });
+    </script>
+  </body>
+</html>
