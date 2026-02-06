@@ -1,10 +1,10 @@
 # AI RPG Maker
 
-A browser-based 2D pixel RPG maker with schema validation and ExcaliburJS runtime.
+A browser-based 2D pixel RPG maker with schema validation, AI-assisted editing, and an ExcaliburJS runtime.
 
 ## Overview
 
-AI RPG Maker provides a deterministic, versioned schema for defining RPG projects and a runtime that compiles schema data into playable ExcaliburJS scenes. Projects are defined as JSON files with strict validation, enabling future AI-driven editing workflows.
+AI RPG Maker provides a deterministic, versioned schema for defining RPG projects, an atomic patch engine for safe modifications, an AI orchestration layer for natural language editing, and a runtime that compiles schema data into playable ExcaliburJS scenes. Projects are defined as JSON files with strict validation, and AI changes flow through the PatchV1 system for atomicity, validation, and full undo/redo support.
 
 ## Quick Start
 
@@ -40,9 +40,15 @@ Open `http://localhost:5173` to see the demo project running.
 ```
 ai-rpg-maker/
 ├── packages/
-│   ├── shared/          # Schema types + validation (Zod)
+│   ├── shared/          # Schema, patch engine, AI orchestration
+│   │   └── src/
+│   │       ├── schema/  # Zod schema definitions + validation
+│   │       ├── patch/   # PatchV1 engine (validate, apply, undo)
+│   │       ├── history/ # Undo/redo stack management
+│   │       └── ai/      # AI orchestration layer
 │   ├── runtime/         # ExcaliburJS game runtime (Vite)
-│   └── editor/          # Future editor UI (placeholder)
+│   └── editor/          # Editor UI with AI panel
+│       └── src/ai/      # AiPanel, ConflictDialog components
 ├── examples/
 │   └── demo-project/    # Demo RPG project
 └── specs/               # Feature specifications
@@ -52,12 +58,12 @@ ai-rpg-maker/
 
 ### @ai-rpg-maker/shared
 
-Schema definitions using Zod with comprehensive validation:
+Core library with schema validation, patch engine, and AI orchestration:
 
-- Project Schema v1 with versioned, typed data model
-- Referential integrity checking (tileset, entity, dialogue references)
-- Bounds validation (tile indices, positions, array lengths)
-- Actionable error messages with suggested fixes
+- **Schema v1** - Zod-based project schema with referential integrity checking, bounds validation, and actionable error messages
+- **Patch Engine v1** - 17 atomic operation types (maps, tiles, collision, entities, triggers, dialogues, quests) with two-phase validation and inverse patch generation for undo
+- **History** - Undo/redo stack with configurable depth
+- **AI Orchestration** - Natural language to validated patch proposals with automatic repair loop, safety guardrails, and conflict detection
 
 ### @ai-rpg-maker/runtime
 
@@ -69,14 +75,45 @@ ExcaliburJS-based runtime that compiles schema data into playable scenes:
 - NPC interaction and trigger regions
 - Debug overlay for interaction feedback
 
-### @ai-rpg-maker/editor (Future)
+### @ai-rpg-maker/editor
 
-Visual editor for creating and modifying RPG projects.
+Editor UI components for AI-assisted project editing:
+
+- **AiPanel** - Prompt input, proposal review with patch summary, apply/reject/regenerate workflow
+- **ConflictDialog** - Undo conflict resolution with cancel/partial/force options
+
+## AI Orchestration
+
+The AI orchestration layer enables natural language editing of game projects. Describe what you want to create or modify, and the system generates validated PatchV1 operations.
+
+```typescript
+import { proposePatchWithRepair, applyPatch } from '@ai-rpg-maker/shared';
+
+const result = await proposePatchWithRepair(
+  project,
+  'Create a small town map with 5 villagers',
+  aiProvider,
+  { maxRepairAttempts: 2 }
+);
+
+if (result.status === 'success') {
+  const { project: updated } = applyPatch(project, result.patch);
+}
+```
+
+**Key features:**
+- **Provider abstraction** - Plug in any AI backend (OpenAI, Anthropic, local models) via the `AIProvider` interface
+- **Strict parsing** - Rejects non-JSON and mixed content responses
+- **Automatic repair** - Sends structured validation errors back to AI for correction (configurable retry count)
+- **Safety guardrails** - Operation count limits, tile edit limits, destructive operation detection with keyword intent analysis
+- **Conflict detection** - Hunk-based snapshot comparison detects manual edits before undo, with three resolution options
+
+See [AI Orchestration README](packages/shared/src/ai/README.md) for architecture details.
 
 ## Development
 
 ```bash
-# Run all tests
+# Run all tests (224 tests across schema, patch, history, and AI modules)
 npm test
 
 # Build all packages
@@ -91,18 +128,21 @@ npm run dev
 The project follows a deterministic pipeline:
 
 ```
-Project JSON → Validate (Zod) → Compile → ExcaliburJS Scene → Play
+User Prompt → AI Provider → PatchV1 JSON → Validate → Apply → Project State → Runtime
 ```
 
 Key principles:
 - **Schema as source of truth** - All game data defined in versioned JSON
 - **Deterministic loading** - Same JSON always produces same game state
 - **Strict validation** - Invalid data caught before rendering with clear errors
+- **AI changes via patch ops only** - All AI modifications expressed as validated PatchV1 operations
+- **Transactional editing** - Atomic apply with full undo/redo and conflict detection
 - **Pixel correctness** - Crisp pixel art with no smoothing artifacts
 
-## Links
+## Specifications
 
-- [Specification](specs/001-schema-runtime-v1/spec.md)
-- [Data Model](specs/001-schema-runtime-v1/data-model.md)
-- [Quickstart Guide](specs/001-schema-runtime-v1/quickstart.md)
-- [Implementation Plan](specs/001-schema-runtime-v1/plan.md)
+| Spec | Feature | Status |
+|------|---------|--------|
+| [001](specs/001-schema-runtime-v1/spec.md) | Project Schema + Runtime | Complete |
+| [002](specs/002-ai-patch-engine/spec.md) | AI Patch Engine | Complete |
+| [003](specs/003-ai-orchestration/spec.md) | AI Orchestration | Complete |

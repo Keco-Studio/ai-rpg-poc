@@ -10,7 +10,8 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm test --workspaces --if-present",
-    "dev": "npm run dev --workspace=packages/runtime"
+    "dev": "npm run dev --workspace=packages/runtime",
+    "demo:ai": "npm run demo --workspace=examples/ai-demo"
   },
   "engines": {
     "node": ">=20.0.0",
