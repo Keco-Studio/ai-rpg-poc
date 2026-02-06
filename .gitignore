@@ -34,3 +34,6 @@ vite.config.ts.timestamp-*
 
 # Coverage
 coverage/
+
+# AI demo output
+examples/ai-demo/project-output.json
