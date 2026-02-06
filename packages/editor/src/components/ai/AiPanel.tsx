@@ -105,6 +105,7 @@ export function AiPanel({
 
   return (
     <div
+      data-testid="ai-panel"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -119,6 +120,7 @@ export function AiPanel({
 
       {/* Prompt Input */}
       <textarea
+        data-testid="ai-prompt-input"
         value={state.prompt}
         onChange={(e) => setState((prev) => ({ ...prev, prompt: e.target.value }))}
         placeholder="Describe what to create or modify..."
@@ -138,6 +140,7 @@ export function AiPanel({
       />
 
       <button
+        data-action="propose"
         onClick={handlePropose}
         disabled={state.loading || !state.prompt.trim()}
         style={{

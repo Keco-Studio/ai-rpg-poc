@@ -35,6 +35,7 @@ export function HistoryPanel({
 
   return (
     <div
+      data-testid="history-panel"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -108,6 +109,9 @@ export function HistoryPanel({
           entries.map((entry, i) => (
             <div
               key={i}
+              data-history-entry={i}
+              data-origin={entry.origin}
+              className={entry.isUndone ? 'undone' : ''}
               style={{
                 padding: '4px 6px',
                 marginBottom: 2,
@@ -130,7 +134,7 @@ export function HistoryPanel({
                 >
                   {entry.origin === 'ai' ? 'AI' : 'Manual'}
                 </span>
-                <span style={{ color: '#6c7086', fontSize: 10 }}>
+                <span data-timestamp={entry.timestamp} style={{ color: '#6c7086', fontSize: 10 }}>
                   {formatTime(entry.timestamp)}
                 </span>
               </div>

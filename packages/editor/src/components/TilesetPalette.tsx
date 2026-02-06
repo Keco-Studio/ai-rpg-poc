@@ -22,6 +22,7 @@ export function TilesetPalette({
 
   return (
     <div
+      data-testid="tileset-palette"
       style={{
         background: '#1e1e2e',
         borderTop: '1px solid #313244',
@@ -50,6 +51,8 @@ export function TilesetPalette({
           return (
             <div
               key={tileId}
+              data-tile-id={tileId}
+              className={isSelected ? 'selected' : ''}
               onClick={() => handleClick(tileId)}
               title={`Tile ${tileId}`}
               style={{

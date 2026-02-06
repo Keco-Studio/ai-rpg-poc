@@ -17,6 +17,7 @@ export function ProjectBrowser({
 
   return (
     <div
+      data-testid="project-browser"
       style={{
         width: 200,
         flexShrink: 0,
@@ -28,13 +29,15 @@ export function ProjectBrowser({
       }}
     >
       {/* Maps */}
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 12 }} data-section="maps">
         <div style={{ color: '#6c7086', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', fontSize: 10 }}>
           Maps ({maps.length})
         </div>
         {maps.map((map) => (
           <div
             key={map.id}
+            data-map-id={map.id}
+            className={map.id === activeMapId ? 'active' : ''}
             onClick={() => onSelectMap(map.id)}
             style={{
               padding: '3px 6px',
@@ -54,7 +57,7 @@ export function ProjectBrowser({
       </div>
 
       {/* Tilesets */}
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 12 }} data-section="tilesets">
         <div style={{ color: '#6c7086', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', fontSize: 10 }}>
           Tilesets ({tilesets.length})
         </div>
@@ -69,13 +72,14 @@ export function ProjectBrowser({
       </div>
 
       {/* Entity Definitions */}
-      <div>
+      <div data-section="entities">
         <div style={{ color: '#6c7086', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', fontSize: 10 }}>
           Entities ({entityDefs.length})
         </div>
         {entityDefs.map((def) => (
           <div
             key={def.id}
+            data-entity-def={def.id}
             onClick={() => onSelectEntityDef(def.id)}
             style={{
               padding: '3px 6px',

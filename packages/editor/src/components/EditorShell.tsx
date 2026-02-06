@@ -173,7 +173,7 @@ function EditorShellInner({ aiProvider }: { aiProvider: AIProvider }) {
   }, [state.historyMeta, state.undoneCount]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }} data-testid="editor-shell">
       {/* Toolbar */}
       <ToolBar
         activeTool={state.activeTool}

@@ -63,6 +63,7 @@ export function ToolBar({
 
   return (
     <div
+      data-testid="toolbar"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -77,6 +78,8 @@ export function ToolBar({
       {TOOLS.map((tool) => (
         <button
           key={tool.id}
+          data-tool={tool.id}
+          className={activeTool === tool.id ? 'active' : ''}
           onClick={() => onSelectTool(tool.id)}
           title={`${tool.label} (${tool.shortcut})`}
           style={{
@@ -98,6 +101,7 @@ export function ToolBar({
 
       {/* Undo/Redo */}
       <button
+        data-action="undo"
         onClick={onUndo}
         disabled={!canUndo}
         title="Undo (Ctrl+Z)"
@@ -114,6 +118,7 @@ export function ToolBar({
         Undo
       </button>
       <button
+        data-action="redo"
         onClick={onRedo}
         disabled={!canRedo}
         title="Redo (Ctrl+Shift+Z)"

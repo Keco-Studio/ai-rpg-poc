@@ -184,6 +184,7 @@ export function MapViewport({
     >
       <canvas
         ref={canvasRef}
+        data-testid="map-viewport"
         style={{
           display: 'block',
           width: '100%',
