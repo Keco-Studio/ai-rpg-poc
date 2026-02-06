@@ -42,7 +42,7 @@ export function createDemoProject(): Project {
       'demo-tileset': {
         id: 'demo-tileset',
         name: 'Demo Tileset',
-        imagePath: 'assets/demo-tileset.png',
+        imagePath: 'assets/tilesets/dungeon-tileset.png',
         tileWidth: 16,
         tileHeight: 16,
         tileCount: 64,

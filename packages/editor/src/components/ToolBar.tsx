@@ -24,10 +24,42 @@ export function ToolBar({
   canRedo,
   onUndo,
   onRedo,
+  onDownloadProject,
+  onLoadProject,
 }: ToolBarProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          onLoadProject(reader.result);
+        }
+      };
+      reader.readAsText(file);
+      // Reset so the same file can be loaded again
+      e.target.value = '';
+    },
+    [onLoadProject],
+  );
   // Global keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Save: Ctrl+S
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        onDownloadProject();
+        return;
+      }
+      // Load: Ctrl+O
+      if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+        e.preventDefault();
+        fileInputRef.current?.click();
+        return;
+      }
       // Undo: Ctrl+Z
       if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         e.preventDefault();
@@ -59,7 +91,7 @@ export function ToolBar({
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [canUndo, canRedo, onUndo, onRedo, onSelectTool]);
+  }, [canUndo, canRedo, onUndo, onRedo, onSelectTool, onDownloadProject]);
 
   return (
     <div
@@ -134,6 +166,48 @@ export function ToolBar({
       >
         Redo
       </button>
+
+      <div style={{ width: 1, height: 20, background: '#313244', margin: '0 4px' }} />
+
+      <button
+        data-action="download"
+        onClick={onDownloadProject}
+        title="Download Project JSON (Ctrl+S)"
+        style={{
+          padding: '4px 10px',
+          fontSize: 12,
+          background: '#313244',
+          color: '#cdd6f4',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+        }}
+      >
+        Save JSON
+      </button>
+      <button
+        data-action="load"
+        onClick={() => fileInputRef.current?.click()}
+        title="Load Project JSON (Ctrl+O)"
+        style={{
+          padding: '4px 10px',
+          fontSize: 12,
+          background: '#313244',
+          color: '#cdd6f4',
+          border: 'none',
+          borderRadius: 4,
+          cursor: 'pointer',
+        }}
+      >
+        Load JSON
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+      />
     </div>
   );
 }

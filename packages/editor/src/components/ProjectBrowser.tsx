@@ -8,6 +8,7 @@ import type { ProjectBrowserProps } from './types.js';
 export function ProjectBrowser({
   project,
   activeMapId,
+  selectedEntityDefId,
   onSelectMap,
   onSelectEntityDef,
 }: ProjectBrowserProps) {
@@ -85,7 +86,8 @@ export function ProjectBrowser({
               padding: '3px 6px',
               borderRadius: 3,
               cursor: 'pointer',
-              color: '#cdd6f4',
+              background: def.id === selectedEntityDefId ? '#313244' : 'transparent',
+              color: def.id === selectedEntityDefId ? '#89b4fa' : '#cdd6f4',
               marginBottom: 1,
             }}
           >

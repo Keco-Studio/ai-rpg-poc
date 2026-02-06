@@ -26,7 +26,7 @@ export interface UseMapInteractionOptions {
   onBeginTransaction: () => void;
   onAddCells: (cells: CellChange[]) => void;
   onAddOps: (ops: PatchOp[]) => void;
-  onCommitTransaction: () => void;
+  onCommitTransaction: (pendingCells?: CellChange[], pendingOps?: PatchOp[]) => void;
   onCancelTransaction: () => void;
 }
 
@@ -82,6 +82,14 @@ export function useMapInteraction(
       const tile = mouseToTile(e, options.tileSize, panX, panY, zoom);
       const clamped = clampTile(tile.x, tile.y);
 
+      console.log('[useMapInteraction] mouseDown:', {
+        tool: options.activeTool,
+        tile: clamped,
+        selectedTileId: options.selectedTileId,
+        mapId: options.mapId,
+        layerId: options.layerId,
+      });
+
       isDragging.current = true;
       lastTile.current = clamped;
       paintedTiles.current.clear();
@@ -91,6 +99,7 @@ export function useMapInteraction(
         options.activeTool === 'erase' ||
         options.activeTool === 'collision'
       ) {
+        console.log('[useMapInteraction] starting brush/erase/collision transaction');
         options.onBeginTransaction();
         const value =
           options.activeTool === 'erase'
@@ -100,6 +109,7 @@ export function useMapInteraction(
               : options.selectedTileId;
         const key = `${clamped.x},${clamped.y}`;
         paintedTiles.current.add(key);
+        console.log('[useMapInteraction] adding cell:', { x: clamped.x, y: clamped.y, value });
         options.onAddCells([{ x: clamped.x, y: clamped.y, value }]);
       } else if (options.activeTool === 'rect') {
         rectStart.current = clamped;
@@ -113,8 +123,8 @@ export function useMapInteraction(
             clamped.x,
             clamped.y,
           );
-          options.onAddOps([op]);
-          options.onCommitTransaction();
+          // Pass ops directly to commit to avoid React state batching issues.
+          options.onCommitTransaction(undefined, [op]);
           isDragging.current = false;
         }
       } else if (options.activeTool === 'trigger') {
@@ -157,6 +167,7 @@ export function useMapInteraction(
 
   const onMouseUp = useCallback(
     (_e: React.MouseEvent<HTMLCanvasElement>) => {
+      console.log('[useMapInteraction] mouseUp, isDragging:', isDragging.current, 'tool:', options.activeTool);
       if (!isDragging.current) return;
       isDragging.current = false;
 
@@ -173,11 +184,10 @@ export function useMapInteraction(
             cells.push({ x, y, value: options.selectedTileId });
           }
         }
-        if (cells.length > 0) {
-          options.onAddCells(cells);
-        }
         rectStart.current = null;
-        options.onCommitTransaction();
+        // Pass cells directly to commit to avoid React state batching issues —
+        // dispatching ADD_CELLS then immediately committing would read stale state.
+        options.onCommitTransaction(cells);
       } else if (
         options.activeTool === 'trigger' &&
         rectStart.current &&
@@ -197,14 +207,15 @@ export function useMapInteraction(
           width: w,
           height: h,
         });
-        options.onAddOps([op]);
         rectStart.current = null;
-        options.onCommitTransaction();
+        // Pass ops directly to commit to avoid React state batching issues.
+        options.onCommitTransaction(undefined, [op]);
       } else if (
         options.activeTool === 'brush' ||
         options.activeTool === 'erase' ||
         options.activeTool === 'collision'
       ) {
+        console.log('[useMapInteraction] committing brush/erase/collision transaction');
         options.onCommitTransaction();
       }
 

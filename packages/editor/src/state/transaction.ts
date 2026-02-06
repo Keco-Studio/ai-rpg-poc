@@ -39,8 +39,6 @@ function generatePatchId(): string {
 }
 
 export class TransactionManager {
-  private currentTransaction: Transaction | null = null;
-
   /**
    * Start a new transaction for a gesture.
    */
@@ -49,11 +47,6 @@ export class TransactionManager {
     mapId: string,
     layerId: string | null,
   ): Transaction {
-    if (this.currentTransaction) {
-      // Auto-cancel any stale transaction
-      this.cancel();
-    }
-
     const tx: Transaction = {
       id: generateTxId(),
       toolType,
@@ -64,24 +57,7 @@ export class TransactionManager {
       startedAt: Date.now(),
     };
 
-    this.currentTransaction = tx;
     return tx;
-  }
-
-  /**
-   * Accumulate cell changes during a gesture.
-   */
-  addCells(transaction: Transaction, cells: CellChange[]): Transaction {
-    transaction.cells.push(...cells);
-    return transaction;
-  }
-
-  /**
-   * Accumulate entity/trigger ops during a gesture.
-   */
-  addOps(transaction: Transaction, ops: PatchOp[]): Transaction {
-    transaction.entityOps.push(...ops);
-    return transaction;
   }
 
   /**
@@ -93,8 +69,6 @@ export class TransactionManager {
     project: Project,
     selectedTileId: number,
   ): { patch: PatchV1; result: ApplyResult; meta: HistoryEntryMeta } | null {
-    this.currentTransaction = null;
-
     // Build ops from accumulated data
     let ops: PatchOp[] = [];
 
@@ -189,8 +163,9 @@ export class TransactionManager {
 
   /**
    * Cancel the transaction without applying.
+   * (No-op since we don't track internal state anymore)
    */
   cancel(): void {
-    this.currentTransaction = null;
+    // No-op - transaction state is managed by the reducer
   }
 }

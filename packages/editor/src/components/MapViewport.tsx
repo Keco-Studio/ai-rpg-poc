@@ -20,7 +20,7 @@ interface InternalMapViewportProps extends MapViewportProps {
   onBeginTransaction: () => void;
   onAddCells: (cells: CellChange[]) => void;
   onAddOps: (ops: PatchOp[]) => void;
-  onCommitTransaction: () => void;
+  onCommitTransaction: (pendingCells?: CellChange[], pendingOps?: PatchOp[]) => void;
   onCancelTransaction: () => void;
 }
 

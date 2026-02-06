@@ -69,9 +69,47 @@ function EditorShellInner({ aiProvider }: { aiProvider: AIProvider }) {
     }
   }, [historyStack, state.project, dispatch]);
 
-  // Tool selection
+  // Tool selection — auto-select first entity def when switching to entity tool
   const handleSelectTool = useCallback(
-    (tool: ToolType) => dispatch({ type: 'SET_TOOL', tool }),
+    (tool: ToolType) => {
+      dispatch({ type: 'SET_TOOL', tool });
+      if (tool === 'entity' && !state.selectedEntityDefId) {
+        const defIds = Object.keys(state.project.entityDefs);
+        if (defIds.length > 0) {
+          dispatch({ type: 'SET_ENTITY_DEF', entityDefId: defIds[0] });
+        }
+      }
+    },
+    [dispatch, state.selectedEntityDefId, state.project.entityDefs],
+  );
+
+  // Download project JSON
+  const handleDownloadProject = useCallback(() => {
+    const json = JSON.stringify(state.project, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `project-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [state.project]);
+
+  // Load project JSON
+  const handleLoadProject = useCallback(
+    (json: string) => {
+      try {
+        const project = JSON.parse(json);
+        dispatch({ type: 'SET_PROJECT', project });
+        // Auto-select first map
+        const mapIds = Object.keys(project.maps);
+        if (mapIds.length > 0) {
+          dispatch({ type: 'SET_ACTIVE_MAP', mapId: mapIds[0] });
+        }
+      } catch (err) {
+        console.error('[EditorShell] Failed to load project JSON:', err);
+      }
+    },
     [dispatch],
   );
 
@@ -115,7 +153,7 @@ function EditorShellInner({ aiProvider }: { aiProvider: AIProvider }) {
   );
 
   const handleCommitTransaction = useCallback(
-    () => commitTransaction(),
+    (pendingCells?: CellChange[], pendingOps?: PatchOp[]) => commitTransaction(pendingCells, pendingOps),
     [commitTransaction],
   );
 
@@ -182,6 +220,8 @@ function EditorShellInner({ aiProvider }: { aiProvider: AIProvider }) {
         canRedo={canRedo}
         onUndo={handleUndo}
         onRedo={handleRedo}
+        onDownloadProject={handleDownloadProject}
+        onLoadProject={handleLoadProject}
       />
 
       {/* Main content */}
@@ -190,6 +230,7 @@ function EditorShellInner({ aiProvider }: { aiProvider: AIProvider }) {
         <ProjectBrowser
           project={state.project}
           activeMapId={state.activeMapId}
+          selectedEntityDefId={state.selectedEntityDefId}
           onSelectMap={handleSelectMap}
           onSelectEntityDef={handleSelectEntityDef}
         />

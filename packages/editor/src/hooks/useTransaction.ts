@@ -16,7 +16,7 @@ export interface UseTransactionReturn {
   beginTransaction: (toolType: ToolType, mapId: string, layerId: string | null) => void;
   addCells: (cells: CellChange[]) => void;
   addOps: (ops: PatchOp[]) => void;
-  commitTransaction: () => void;
+  commitTransaction: (pendingCells?: CellChange[], pendingOps?: PatchOp[]) => void;
   cancelTransaction: () => void;
   historyStack: HistoryStack;
 }
@@ -27,10 +27,15 @@ export function useTransaction(
 ): UseTransactionReturn {
   const txManagerRef = useRef(new TransactionManager());
   const historyStackRef = useRef(new HistoryStack());
+  // Ref to hold the most recently begun transaction, used as a fallback when
+  // commitTransaction is called in the same event handler as beginTransaction
+  // (before React has processed the BEGIN_TRANSACTION dispatch).
+  const pendingTxRef = useRef<ReturnType<TransactionManager['begin']> | null>(null);
 
   const beginTransaction = useCallback(
     (toolType: ToolType, mapId: string, layerId: string | null) => {
       const tx = txManagerRef.current.begin(toolType, mapId, layerId);
+      pendingTxRef.current = tx;
       dispatch({ type: 'BEGIN_TRANSACTION', transaction: tx });
     },
     [dispatch],
@@ -38,32 +43,52 @@ export function useTransaction(
 
   const addCells = useCallback(
     (cells: CellChange[]) => {
-      if (state.transaction) {
-        txManagerRef.current.addCells(state.transaction, cells);
-        dispatch({ type: 'ADD_CELLS', cells });
-      }
+      // Always dispatch - the reducer will check if there's a transaction
+      // Don't check state.transaction here due to React state batching/closure issues
+      dispatch({ type: 'ADD_CELLS', cells });
     },
-    [state.transaction, dispatch],
+    [dispatch],
   );
 
   const addOps = useCallback(
     (ops: PatchOp[]) => {
-      if (state.transaction) {
-        txManagerRef.current.addOps(state.transaction, ops);
-        dispatch({ type: 'ADD_OPS', ops });
-      }
+      // Always dispatch - the reducer will check if there's a transaction
+      // Don't check state.transaction here due to React state batching/closure issues
+      dispatch({ type: 'ADD_OPS', ops });
     },
-    [state.transaction, dispatch],
+    [dispatch],
   );
 
-  const commitTransaction = useCallback(() => {
-    if (!state.transaction) return;
+  const commitTransaction = useCallback((pendingCells?: CellChange[], pendingOps?: PatchOp[]) => {
+    // Use state.transaction if available, otherwise fall back to the ref
+    // (handles same-event begin+commit where React hasn't re-rendered yet).
+    const baseTx = state.transaction ?? pendingTxRef.current;
+    console.log('[useTransaction] commitTransaction called, has transaction:', !!baseTx);
+    if (!baseTx) return;
+
+    // Merge any pending cells/ops that may not have been processed by the
+    // reducer yet (e.g. rect tool adds cells and commits in the same event).
+    const mergedTransaction: typeof baseTx = (pendingCells || pendingOps)
+      ? {
+          ...baseTx,
+          cells: pendingCells
+            ? [...baseTx.cells, ...pendingCells]
+            : baseTx.cells,
+          entityOps: pendingOps
+            ? [...baseTx.entityOps, ...pendingOps]
+            : baseTx.entityOps,
+        }
+      : baseTx;
+
+    console.log('[useTransaction] transaction cells:', mergedTransaction.cells.length, 'ops:', mergedTransaction.entityOps.length);
 
     const result = txManagerRef.current.commit(
-      state.transaction,
+      mergedTransaction,
       state.project,
       state.selectedTileId,
     );
+
+    console.log('[useTransaction] commit result:', !!result);
 
     if (result) {
       // Also push to the HistoryStack for undo/redo support
@@ -73,13 +98,17 @@ export function useTransaction(
         result: result.result,
         meta: result.meta,
       });
+      console.log('[useTransaction] transaction committed successfully');
     } else {
+      console.log('[useTransaction] transaction commit failed, cancelling');
       dispatch({ type: 'CANCEL_TRANSACTION' });
     }
+    pendingTxRef.current = null;
   }, [state.transaction, state.project, state.selectedTileId, dispatch]);
 
   const cancelTransaction = useCallback(() => {
     txManagerRef.current.cancel();
+    pendingTxRef.current = null;
     dispatch({ type: 'CANCEL_TRANSACTION' });
   }, [dispatch]);
 

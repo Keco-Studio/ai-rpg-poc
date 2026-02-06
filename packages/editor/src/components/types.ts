@@ -36,6 +36,7 @@ export interface EditorShellProps {
 export interface ProjectBrowserProps {
   project: Project;
   activeMapId: string | null;
+  selectedEntityDefId: string | null;
   onSelectMap: (mapId: string) => void;
   onSelectEntityDef: (entityDefId: string) => void;
 }
@@ -86,6 +87,8 @@ export interface ToolBarProps {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  onDownloadProject: () => void;
+  onLoadProject: (json: string) => void;
 }
 
 // ---------------------------------------------------------------------------
