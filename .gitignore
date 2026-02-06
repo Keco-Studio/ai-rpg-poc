@@ -35,5 +35,10 @@ vite.config.ts.timestamp-*
 # Coverage
 coverage/
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
 # AI demo output
 examples/ai-demo/project-output.json

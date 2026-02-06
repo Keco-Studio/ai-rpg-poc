@@ -22,18 +22,37 @@ npm install
 # Build the shared schema library
 npm run build --workspace=packages/shared
 
-# Start the development server
+# Start the editor (includes embedded runtime preview)
+npm run dev --workspace=packages/editor
+
+# Or start the standalone runtime
 npm run dev --workspace=packages/runtime
 ```
 
-Open `http://localhost:5173` to see the demo project running.
+Open `http://localhost:5173` to launch the map editor or see the demo project running.
 
-### Controls
+### Runtime Controls
 
 | Key | Action |
 |-----|--------|
 | Arrow keys / WASD | Move player |
 | Spacebar / E | Interact with NPC |
+
+### Editor Controls
+
+| Action | Method |
+|--------|--------|
+| Paint tiles | Left-click with brush tool |
+| Rectangle fill | Drag with rect tool |
+| Erase tiles | Left-click with erase tool |
+| Paint collision | Left-click with collision tool |
+| Place entity | Click with entity tool |
+| Create trigger | Drag with trigger tool |
+| Pan viewport | Middle-click drag or scroll |
+| Zoom | Mouse wheel |
+| Undo | Ctrl+Z |
+| Redo | Ctrl+Shift+Z |
+| Cancel action | Escape |
 
 ## Project Structure
 
@@ -47,8 +66,13 @@ ai-rpg-maker/
 │   │       ├── history/ # Undo/redo stack management
 │   │       └── ai/      # AI orchestration layer
 │   ├── runtime/         # ExcaliburJS game runtime (Vite)
-│   └── editor/          # Editor UI with AI panel
-│       └── src/ai/      # AiPanel, ConflictDialog components
+│   └── editor/          # React map editor (Vite + Canvas 2D)
+│       └── src/
+│           ├── components/ # EditorShell, MapViewport, panels
+│           ├── state/      # EditorStore, transactions, history
+│           ├── renderers/  # Canvas renderers (tiles, entities, etc.)
+│           ├── hooks/      # React hooks for editor interactions
+│           └── adapters/   # Patch builders, AI context
 ├── examples/
 │   └── demo-project/    # Demo RPG project
 └── specs/               # Feature specifications
@@ -77,10 +101,19 @@ ExcaliburJS-based runtime that compiles schema data into playable scenes:
 
 ### @ai-rpg-maker/editor
 
-Editor UI components for AI-assisted project editing:
+React-based map editor with Canvas 2D rendering and AI integration:
 
-- **AiPanel** - Prompt input, proposal review with patch summary, apply/reject/regenerate workflow
-- **ConflictDialog** - Undo conflict resolution with cancel/partial/force options
+- **Canvas Rendering** - Pixel-crisp tile layers, collision overlay, entity/trigger visualization with pan/zoom viewport
+- **Patch-Native Editing** - All manual and AI edits flow through PatchV1 validation pipeline
+- **Transaction System** - Batches brush strokes and gestures into atomic, undoable operations with rectangle detection optimization
+- **Conflict-Aware History** - Detects conflicts between AI patches and manual edits, offers cancel/partial/force undo options
+- **AI Panel** - Natural language prompts, detailed patch preview with resource counts and warnings, apply/reject/regenerate workflow
+- **Runtime Preview** - Embedded iframe with live Excalibur preview and `postMessage` communication
+- **Interactive Tools** - Brush, rect fill, erase, collision paint, entity placement, trigger creation
+- **Project Browser** - Navigate maps, tilesets, and entity definitions
+- **History Panel** - Chronological action log with origin tracking (Manual/AI) and undo cursor visualization
+
+See [Editor README](packages/editor/README.md) for architecture and usage details.
 
 ## AI Orchestration
 
@@ -113,14 +146,17 @@ See [AI Orchestration README](packages/shared/src/ai/README.md) for architecture
 ## Development
 
 ```bash
-# Run all tests (224 tests across schema, patch, history, and AI modules)
+# Run all tests (269 tests across schema, patch, history, AI, and editor modules)
 npm test
 
 # Build all packages
 npm run build
 
+# Run editor dev server
+npm run dev --workspace=packages/editor
+
 # Run runtime dev server
-npm run dev
+npm run dev --workspace=packages/runtime
 ```
 
 ## Architecture
@@ -146,3 +182,4 @@ Key principles:
 | [001](specs/001-schema-runtime-v1/spec.md) | Project Schema + Runtime | Complete |
 | [002](specs/002-ai-patch-engine/spec.md) | AI Patch Engine | Complete |
 | [003](specs/003-ai-orchestration/spec.md) | AI Orchestration | Complete |
+| [004](specs/004-editor-ux/spec.md) | Editor UX v1 | Complete |

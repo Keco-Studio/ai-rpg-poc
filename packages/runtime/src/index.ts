@@ -10,17 +10,36 @@ import { loadProject, loadTilesetImage, sliceTileset } from './loader/loadAssets
 import { compileMapScene } from './compiler/compileMapScene.js';
 import { DebugOverlay } from './ui/debugOverlay.js';
 
-/** Path to the demo project (relative to Vite public/dev server root) */
-const PROJECT_URL = '/examples/demo-project/project.json';
-const ASSETS_BASE = '/examples/demo-project';
+/** Default project path (relative to Vite public/dev server root) */
+const DEFAULT_PROJECT_URL = '/examples/demo-project/project.json';
+const DEFAULT_ASSETS_BASE = '/examples/demo-project';
+
+/**
+ * Read project URL from ?project= query parameter.
+ * Assets base is derived from the project URL's directory.
+ *
+ * Examples:
+ *   ?project=/projects/my-project.json  → assets from /projects/
+ *   (no param)                          → default demo project
+ */
+function resolveProjectPaths(): { projectUrl: string; assetsBase: string } {
+  const params = new URLSearchParams(window.location.search);
+  const projectParam = params.get('project');
+  if (projectParam) {
+    const assetsBase = projectParam.substring(0, projectParam.lastIndexOf('/')) || '.';
+    return { projectUrl: projectParam, assetsBase };
+  }
+  return { projectUrl: DEFAULT_PROJECT_URL, assetsBase: DEFAULT_ASSETS_BASE };
+}
 
 async function main(): Promise<void> {
   console.log('[RPG Runtime] Starting...');
 
   try {
     // Step 1: Load and validate project
-    console.log('[RPG Runtime] Loading project...');
-    const project = await loadProject(PROJECT_URL);
+    const { projectUrl, assetsBase } = resolveProjectPaths();
+    console.log(`[RPG Runtime] Loading project from: ${projectUrl}`);
+    const project = await loadProject(projectUrl);
     console.log(`[RPG Runtime] Project loaded: "${project.metadata.name}"`);
 
     // Step 2: Create engine with pixel-crisp settings
@@ -46,7 +65,7 @@ async function main(): Promise<void> {
     }
 
     console.log(`[RPG Runtime] Loading tileset: ${tileset.name}...`);
-    const tilesetImage = await loadTilesetImage(tileset, ASSETS_BASE);
+    const tilesetImage = await loadTilesetImage(tileset, assetsBase);
     const spriteSheet = sliceTileset(tilesetImage, tileset);
 
     // Step 4: Create debug overlay
