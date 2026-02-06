@@ -7,3 +7,4 @@
 export * from './schema/index.js';
 export * from './patch/index.js';
 export * from './history/index.js';
+export * from './ai/index.js';
