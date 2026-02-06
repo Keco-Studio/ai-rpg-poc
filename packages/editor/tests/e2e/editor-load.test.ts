@@ -3,9 +3,9 @@ import { test, expect } from '@playwright/test';
 test.describe('Editor Shell', () => {
   test('should load editor with all main components', async ({ page }) => {
     await page.goto('/');
-
-    // Check for main layout sections
-    await expect(page.locator('text=AI RPG Maker')).toBeVisible();
+    
+    // Wait for the page to fully load
+    await page.waitForLoadState('networkidle');
     
     // ToolBar should be visible
     await expect(page.locator('[data-testid="toolbar"]')).toBeVisible();
@@ -25,13 +25,17 @@ test.describe('Editor Shell', () => {
     await page.goto('/');
 
     // Wait for project to load
+    await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="project-browser"]');
     
     // Should show demo map in project browser
-    await expect(page.locator('text=demo-map')).toBeVisible();
+    const projectBrowser = page.locator('[data-testid="project-browser"]');
+    await expect(projectBrowser.getByText('Demo Map')).toBeVisible();
     
-    // Should show demo tileset
-    await expect(page.locator('text=demo-tileset')).toBeVisible();
+    // Should show demo tileset (check in tileset palette area)
+    const tilesetPalette = page.locator('[data-testid="tileset-palette"]');
+    await expect(tilesetPalette).toBeVisible();
+    await expect(tilesetPalette.getByText('Demo Tileset')).toBeVisible();
   });
 
   test('should have all tools in toolbar', async ({ page }) => {

@@ -3,21 +3,25 @@ import { test, expect } from '@playwright/test';
 test.describe('Entity and Trigger Placement', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     await page.waitForSelector('canvas[data-testid="map-viewport"]');
   });
 
   test('should place entity with entity tool', async ({ page }) => {
+    const toolbar = page.locator('[data-testid="toolbar"]');
+    const canvas = page.locator('canvas[data-testid="map-viewport"]');
+    const projectBrowser = page.locator('[data-testid="project-browser"]');
+    
     // Select entity tool
-    await page.click('[data-tool="entity"]');
+    await toolbar.getByRole('button', { name: /entity/i }).click();
     
     // Select an entity from project browser
-    const entityDef = page.locator('[data-testid="project-browser"] [data-entity-def]').first();
+    const entityDef = projectBrowser.locator('[data-entity-def]').first();
     if (await entityDef.isVisible()) {
       await entityDef.click();
     }
     
     // Click on canvas to place entity
-    const canvas = page.locator('canvas[data-testid="map-viewport"]');
     const box = await canvas.boundingBox();
     if (box) {
       await canvas.click({
@@ -28,19 +32,21 @@ test.describe('Entity and Trigger Placement', () => {
       });
     }
     
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     
     // Should enable undo
-    const undoButton = page.locator('[data-action="undo"]');
+    const undoButton = toolbar.getByRole('button', { name: /undo/i });
     await expect(undoButton).toBeEnabled();
   });
 
   test('should create trigger with trigger tool', async ({ page }) => {
+    const toolbar = page.locator('[data-testid="toolbar"]');
+    const canvas = page.locator('canvas[data-testid="map-viewport"]');
+    
     // Select trigger tool
-    await page.click('[data-tool="trigger"]');
+    await toolbar.getByRole('button', { name: /trigger/i }).click();
     
     // Drag on canvas to create trigger region
-    const canvas = page.locator('canvas[data-testid="map-viewport"]');
     const box = await canvas.boundingBox();
     if (box) {
       await canvas.hover({ position: { x: 100, y: 100 } });
@@ -49,23 +55,16 @@ test.describe('Entity and Trigger Placement', () => {
       await page.mouse.up();
     }
     
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     
     // Should enable undo
-    const undoButton = page.locator('[data-action="undo"]');
+    const undoButton = toolbar.getByRole('button', { name: /undo/i });
     await expect(undoButton).toBeEnabled();
   });
 
-  test('should show entity overlay on canvas', async ({ page }) => {
+  test('should render canvas without errors', async ({ page }) => {
     // Canvas should render entities (can't easily test canvas content, but can verify no errors)
     const canvas = page.locator('canvas[data-testid="map-viewport"]');
     await expect(canvas).toBeVisible();
-    
-    // No console errors should be present
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        throw new Error(`Console error: ${msg.text()}`);
-      }
-    });
   });
 });

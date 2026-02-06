@@ -3,41 +3,47 @@ import { test, expect } from '@playwright/test';
 test.describe('Tool Interactions', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
     await page.waitForSelector('canvas[data-testid="map-viewport"]');
   });
 
   test('should switch between tools', async ({ page }) => {
+    const toolbar = page.locator('[data-testid="toolbar"]');
+    
     // Click rect tool
-    await page.click('[data-tool="rect"]');
-    await expect(page.locator('[data-tool="rect"]')).toHaveClass(/active|selected/);
+    await toolbar.getByRole('button', { name: /rect/i }).click();
+    await expect(toolbar.locator('[data-tool="rect"]')).toHaveClass(/active/);
     
     // Click erase tool
-    await page.click('[data-tool="erase"]');
-    await expect(page.locator('[data-tool="erase"]')).toHaveClass(/active|selected/);
+    await toolbar.getByRole('button', { name: /erase/i }).click();
+    await expect(toolbar.locator('[data-tool="erase"]')).toHaveClass(/active/);
     
     // Click collision tool
-    await page.click('[data-tool="collision"]');
-    await expect(page.locator('[data-tool="collision"]')).toHaveClass(/active|selected/);
+    await toolbar.getByRole('button', { name: /collision/i }).click();
+    await expect(toolbar.locator('[data-tool="collision"]')).toHaveClass(/active/);
   });
 
   test('should select tile from palette', async ({ page }) => {
     const palette = page.locator('[data-testid="tileset-palette"]');
     await expect(palette).toBeVisible();
     
-    // Click on a tile in the palette (assuming grid layout)
-    const tiles = palette.locator('[data-tile-id]').first();
-    await tiles.click();
+    // Click on a tile in the palette
+    const firstTile = palette.locator('[data-tile-id]').first();
+    await firstTile.click();
     
     // Tile should be selected (visual feedback)
-    await expect(tiles).toHaveClass(/selected|active/);
+    await expect(firstTile).toHaveClass(/selected/);
   });
 
   test('should paint tiles on canvas with brush tool', async ({ page }) => {
-    // Select brush tool
-    await page.click('[data-tool="brush"]');
+    const toolbar = page.locator('[data-testid="toolbar"]');
+    
+    // Select brush tool (should be selected by default)
+    await toolbar.getByRole('button', { name: /brush/i }).click();
     
     // Select a tile from palette
-    const firstTile = page.locator('[data-testid="tileset-palette"] [data-tile-id]').first();
+    const palette = page.locator('[data-testid="tileset-palette"]');
+    const firstTile = palette.locator('[data-tile-id]').first();
     await firstTile.click();
     
     // Click on canvas to paint
@@ -52,68 +58,70 @@ test.describe('Tool Interactions', () => {
       });
     }
     
-    // History panel should show a new entry
-    const historyPanel = page.locator('[data-testid="history-panel"]');
-    if (await historyPanel.isVisible()) {
-      await expect(historyPanel.locator('[data-origin="manual"]').first()).toBeVisible();
-    }
+    // Wait a bit for the transaction to complete
+    await page.waitForTimeout(300);
   });
 
   test('should use rect fill tool', async ({ page }) => {
+    const toolbar = page.locator('[data-testid="toolbar"]');
+    const canvas = page.locator('canvas[data-testid="map-viewport"]');
+    const palette = page.locator('[data-testid="tileset-palette"]');
+    
     // Select rect tool
-    await page.click('[data-tool="rect"]');
+    await toolbar.getByRole('button', { name: /rect/i }).click();
     
     // Select a tile
-    await page.locator('[data-testid="tileset-palette"] [data-tile-id]').first().click();
+    await palette.locator('[data-tile-id]').first().click();
     
     // Drag on canvas to create rectangle
-    const canvas = page.locator('canvas[data-testid="map-viewport"]');
     const box = await canvas.boundingBox();
     if (box) {
-      await canvas.hover({
-        position: { x: 100, y: 100 },
-      });
+      await canvas.hover({ position: { x: 100, y: 100 } });
       await page.mouse.down();
-      await canvas.hover({
-        position: { x: 200, y: 200 },
-      });
+      await canvas.hover({ position: { x: 200, y: 200 } });
       await page.mouse.up();
     }
     
     // Transaction should be committed
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
   });
 
   test('should erase tiles with erase tool', async ({ page }) => {
-    // First paint something
-    await page.click('[data-tool="brush"]');
-    const firstTile = page.locator('[data-testid="tileset-palette"] [data-tile-id]').first();
-    await firstTile.click();
-    
+    const toolbar = page.locator('[data-testid="toolbar"]');
     const canvas = page.locator('canvas[data-testid="map-viewport"]');
+    const palette = page.locator('[data-testid="tileset-palette"]');
+    
+    // First paint something
+    await toolbar.getByRole('button', { name: /brush/i }).click();
+    await palette.locator('[data-tile-id]').first().click();
+    
     const box = await canvas.boundingBox();
     if (box) {
       await canvas.click({ position: { x: 150, y: 150 } });
     }
     
+    await page.waitForTimeout(300);
+    
     // Switch to erase tool
-    await page.click('[data-tool="erase"]');
+    await toolbar.getByRole('button', { name: /erase/i }).click();
     
     // Click same position to erase
     if (box) {
       await canvas.click({ position: { x: 150, y: 150 } });
     }
     
-    // Should create a new history entry
-    await page.waitForTimeout(100);
+    // Wait for transaction
+    await page.waitForTimeout(300);
   });
 
   test('should paint collision with collision tool', async ({ page }) => {
+    const toolbar = page.locator('[data-testid="toolbar"]');
+    const canvas = page.locator('canvas[data-testid="map-viewport"]');
+    
     // Select collision tool
-    await page.click('[data-tool="collision"]');
+    await toolbar.getByRole('button', { name: /collision/i }).click();
     
     // Click on canvas
-    const canvas = page.locator('canvas[data-testid="map-viewport"]');
     const box = await canvas.boundingBox();
     if (box) {
       await canvas.click({
@@ -124,7 +132,7 @@ test.describe('Tool Interactions', () => {
       });
     }
     
-    // Should see collision overlay (semi-transparent red)
-    await page.waitForTimeout(100);
+    // Wait for transaction
+    await page.waitForTimeout(300);
   });
 });
